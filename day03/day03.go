@@ -14,15 +14,15 @@ func main() {
 		log.Fatalf("could not read input file: %v", err)
 	}
 	fmt.Println(sumPriority(input))
+	fmt.Println(sumPriority2(input))
 }
 
 func sumPriority(s []byte) int {
 	s = s[:len(s)-1] // remove trailing newline
 	rucksacks := bytes.Split(s, []byte("\n"))
 	sum := 0
-	for num, r := range rucksacks {
+	for _, r := range rucksacks {
 		doubled := make(map[byte]bool)
-		fmt.Printf("\nrucksack %d\n", num)
 		seen := make(map[byte]bool)
 		for i := 0; i < len(r)/2; i++ {
 			seen[r[i]] = true
@@ -33,15 +33,45 @@ func sumPriority(s []byte) int {
 			}
 		}
 		for e := range doubled {
-			var toadd int
-			if unicode.IsUpper(rune(e)) {
-				toadd = int(e) - 38
-			} else if unicode.IsLower(rune(e)) {
-				toadd = int(e) - 96
-			}
-			sum += toadd
-			fmt.Printf("%c, %d\n", e, toadd)
+			sum += getPriority(e)
 		}
 	}
 	return sum
+}
+
+func sumPriority2(s []byte) int {
+	s = s[:len(s)-1] // remove trailing newline
+	r := bytes.Split(s, []byte("\n"))
+	sum := 0
+	for i := 0; i < len(r); i += 3 {
+		seen := make(map[byte]bool)
+		twice := make(map[byte]bool)
+		thrice := make(map[byte]bool)
+		for _, j := range r[i] {
+			seen[j] = true
+		}
+		for _, k := range r[i+1] {
+			if seen[k] {
+				twice[k] = true
+			}
+		}
+		for _, l := range r[i+2] {
+			if twice[l] {
+				thrice[l] = true
+			}
+		}
+		for e := range thrice {
+			sum += getPriority(e)
+		}
+	}
+	return sum
+}
+
+func getPriority(e byte) int {
+	if unicode.IsUpper(rune(e)) {
+		return int(e) - 38
+	} else if unicode.IsLower(rune(e)) {
+		return int(e) - 96
+	}
+	return 0
 }
